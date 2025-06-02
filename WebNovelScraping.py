@@ -23,7 +23,7 @@ class SupremeMagusScraper:
         })
         self.base_url = base_url.rstrip("/")
 
-        # XPaths absolutos conforme solicitado:
+        # XPaths absolutos
         self.xpath_numero = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/h1"
         self.xpath_titulo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/div[1]"
         self.xpath_conteudo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[4]"
@@ -37,7 +37,7 @@ class SupremeMagusScraper:
     def parse_chapter(self, html_content):
         tree = html.fromstring(html_content)
 
-        # Usa os XPaths absolutos que você forneceu
+        # Usa os XPaths
         numero_elem = tree.xpath(self.xpath_numero)
         titulo_elem = tree.xpath(self.xpath_titulo)
         conteudo_elem = tree.xpath(self.xpath_conteudo)

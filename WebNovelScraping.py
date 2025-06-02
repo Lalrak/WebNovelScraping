@@ -8,7 +8,7 @@ from lxml import html
 from ebooklib import epub
 
 
-# Configuração básica de logging
+# ConfiguraÃ§Ã£o bÃ¡sica de logging
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO
@@ -23,7 +23,7 @@ class SupremeMagusScraper:
         })
         self.base_url = base_url.rstrip("/")
 
-        # XPaths absolutos
+        # XPaths absolutos conforme solicitado:
         self.xpath_numero = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/h1"
         self.xpath_titulo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/div[1]"
         self.xpath_conteudo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[4]"
@@ -37,21 +37,21 @@ class SupremeMagusScraper:
     def parse_chapter(self, html_content):
         tree = html.fromstring(html_content)
 
-        # Usa os XPaths
+        # Usa os XPaths absolutos que vocÃª forneceu
         numero_elem = tree.xpath(self.xpath_numero)
         titulo_elem = tree.xpath(self.xpath_titulo)
         conteudo_elem = tree.xpath(self.xpath_conteudo)
 
         if not numero_elem or not titulo_elem or not conteudo_elem:
-            raise ValueError("Layout inesperado: não encontrou número, título ou conteúdo.")
+            raise ValueError("Layout inesperado: nÃ£o encontrou nÃºmero, tÃ­tulo ou conteÃºdo.")
 
         numero = numero_elem[0].text_content().strip()
         titulo = titulo_elem[0].text_content().strip()
 
-        # Dentro do bloco de conteúdo, pega todos os <p>
+        # Dentro do bloco de conteÃºdo, pega todos os <p>
         paragrafos = conteudo_elem[0].xpath(".//p")
         if not paragrafos:
-            raise ValueError("Layout inesperado: não encontrou nenhum parágrafo dentro do conteúdo.")
+            raise ValueError("Layout inesperado: nÃ£o encontrou nenhum parÃ¡grafo dentro do conteÃºdo.")
 
         conteudo_lista = [p.text_content().strip() for p in paragrafos if p.text_content().strip()]
 
@@ -90,11 +90,11 @@ def criar_epub(chapters, output_path, book_title="Supreme Magus"):
     book.set_language("pt-br")
     book.add_author("Central Novel")
 
-    # Spine declarado como lista genérica para não conflitar com tipos
+    # Spine declarado como lista genÃ©rica para nÃ£o conflitar com tipos
     spine: list = ["nav"]
     toc: list = []
 
-    book.add_metadata("DC", "description", "Webnovel Supreme Magus – coletado automaticamente.")
+    book.add_metadata("DC", "description", "Webnovel Supreme Magus â€“ coletado automaticamente.")
 
     for idx, chap in enumerate(chapters, start=1):
         c = epub.EpubHtml(
@@ -103,7 +103,7 @@ def criar_epub(chapters, output_path, book_title="Supreme Magus"):
             lang="pt-br"
         )
 
-        # Monta o HTML do capítulo usando número, título e parágrafos
+        # Monta o HTML do capÃ­tulo usando nÃºmero, tÃ­tulo e parÃ¡grafos
         html_body = f"<h1>{chap['numero']}</h1>\n<h2>{chap['titulo']}</h2>\n"
         for p in chap["conteudo"]:
             html_body += f"<p>{p}</p>\n"
@@ -144,38 +144,42 @@ def main(start_chapter, end_chapter, output_txt, output_epub, delay_range=(1, 2)
 
     for num in range(start_chapter, end_chapter + 1):
         try:
-            logging.info(f"Buscando capítulo {num}...")
+            logging.info(f"Buscando capÃ­tulo {num}...")
             chap_data = scraper.fetch_and_parse(num)
             chapters.append(chap_data)
 
-            # Delay curto para não sobrecarregar o servidor
+            # Delay curto para nÃ£o sobrecarregar o servidor
             time.sleep(random.uniform(*delay_range))
 
         except requests.exceptions.RequestException as e:
-            logging.warning(f"Falha de rede no capítulo {num}: {e}")
+            logging.warning(f"Falha de rede no capÃ­tulo {num}: {e}")
         except ValueError as ve:
-            logging.warning(f"Capítulo {num} ignorado: {ve}")
+            logging.warning(f"CapÃ­tulo {num} ignorado: {ve}")
         except Exception as ex:
-            logging.error(f"Erro inesperado no capítulo {num}: {ex}")
+            logging.error(f"Erro inesperado no capÃ­tulo {num}: {ex}")
 
     if not chapters:
-        logging.error("Nenhum capítulo foi recuperado com sucesso.")
+        logging.error("Nenhum capÃ­tulo foi recuperado com sucesso.")
         return
 
-    logging.info(f"Salvando {len(chapters)} capítulos em TXT: {output_txt}")
+    logging.info(f"Salvando {len(chapters)} capÃ­tulos em TXT: {output_txt}")
     salvar_txt(chapters, output_txt)
 
     logging.info(f"Criando EPUB: {output_epub}")
     criar_epub(chapters, output_epub)
-    logging.info("Processo concluído.")
+    logging.info("Processo concluÃ­do.")
 
 
 if __name__ == "__main__":
-    # Ajuste o intervalo de capítulos aqui
-    START_CHAPTER = 1
-    END_CHAPTER = 10
+    # Ajuste o intervalo de capÃ­tulos aqui
+    START_CHAPTER = 487
+    END_CHAPTER = 1262
 
-    OUTPUT_TXT = "supreme_magus.txt"
-    OUTPUT_EPUB = "supreme_magus.epub"
+    #vol 6 a 10 - 1 486
+    #vol 6 a 10 - 487 1262
+    #vol 11 a 14 - 1263 1712
+
+    OUTPUT_TXT = "supreme_magus_Vol_6_a_10.txt"
+    OUTPUT_EPUB = "supreme_magus_Vol_6_a_10.epub"
 
     main(START_CHAPTER, END_CHAPTER, OUTPUT_TXT, OUTPUT_EPUB)

@@ -8,7 +8,6 @@ from lxml import html
 from ebooklib import epub
 
 
-# Configuração básica de logging
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO
@@ -23,7 +22,6 @@ class SupremeMagusScraper:
         })
         self.base_url = base_url.rstrip("/")
 
-        # XPaths absolutos conforme solicitado:
         self.xpath_numero = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/h1"
         self.xpath_titulo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[1]/div[1]"
         self.xpath_conteudo = "/html/body/div[1]/div[2]/div/div[2]/article/div[3]/div/div[4]"
@@ -37,7 +35,6 @@ class SupremeMagusScraper:
     def parse_chapter(self, html_content):
         tree = html.fromstring(html_content)
 
-        # Usa os XPaths absolutos que você forneceu
         numero_elem = tree.xpath(self.xpath_numero)
         titulo_elem = tree.xpath(self.xpath_titulo)
         conteudo_elem = tree.xpath(self.xpath_conteudo)
@@ -48,7 +45,6 @@ class SupremeMagusScraper:
         numero = numero_elem[0].text_content().strip()
         titulo = titulo_elem[0].text_content().strip()
 
-        # Dentro do bloco de conteúdo, pega todos os <p>
         paragrafos = conteudo_elem[0].xpath(".//p")
         if not paragrafos:
             raise ValueError("Layout inesperado: não encontrou nenhum parágrafo dentro do conteúdo.")
@@ -90,7 +86,6 @@ def criar_epub(chapters, output_path, book_title="Supreme Magus"):
     book.set_language("pt-br")
     book.add_author("Central Novel")
 
-    # Spine declarado como lista genérica para não conflitar com tipos
     spine: list = ["nav"]
     toc: list = []
 
@@ -103,7 +98,6 @@ def criar_epub(chapters, output_path, book_title="Supreme Magus"):
             lang="pt-br"
         )
 
-        # Monta o HTML do capítulo usando número, título e parágrafos
         html_body = f"<h1>{chap['numero']}</h1>\n<h2>{chap['titulo']}</h2>\n"
         for p in chap["conteudo"]:
             html_body += f"<p>{p}</p>\n"
@@ -116,7 +110,6 @@ def criar_epub(chapters, output_path, book_title="Supreme Magus"):
     book.toc = toc
     book.spine = spine
 
-    # CSS convertido para bytes
     css = """
     @namespace epub "http://www.idpf.org/2007/ops";
     body { font-family: Cambria, Liberation Serif, serif; margin: 1em; }
@@ -148,7 +141,6 @@ def main(start_chapter, end_chapter, output_txt, output_epub, delay_range=(1, 2)
             chap_data = scraper.fetch_and_parse(num)
             chapters.append(chap_data)
 
-            # Delay curto para não sobrecarregar o servidor
             time.sleep(random.uniform(*delay_range))
 
         except requests.exceptions.RequestException as e:
